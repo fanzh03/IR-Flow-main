@@ -1,0 +1,51 @@
+name: ir-ode-infer
+suffix: ~  # add suffix to saved images
+use_tb_logger: True
+model: Rectified_Flow
+distortion: derain
+gpu_ids: [0]
+timesteps_ode: [1,2,3,4,5,10,20,50]
+
+sde:
+  T: 1000
+  schedule: linear
+
+
+method:
+  isXT: True
+  base: False
+  ode: Euler-1 # Heun-2, Euler-1
+
+degradation:
+  scale: 1
+
+datasets:
+  test1:
+    name: Val_Dataset
+    mode: LQGT # LQGT, GT
+    color: RGB # RGB, gray
+    dataroot_GT: /Datasets/RainL_200/testL/GT
+    dataroot_LQ: /Datasets/RainL_200/testL/LQ
+    batch_size: 1
+    # GT_size: 256
+    # LR_size: 256
+    use_flip: False
+    use_rot: False
+    # sigma_range: [48,50]
+
+## network structures
+network_G:
+  which_model_G: ConditionalUNet
+  setting:
+    in_nc: 3
+    out_nc: 3
+    nf: 64
+    depth: 4
+
+
+
+#### path
+path:
+  pretrain_model_G: /results/experiments/derain/RainL/models/best_G.pth
+  val_images: /results/derain/RainL
+  experiments_root: /results

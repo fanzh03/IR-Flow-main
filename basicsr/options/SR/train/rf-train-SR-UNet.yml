@@ -1,0 +1,89 @@
+#### general settings
+name: SR
+use_tb_logger: true
+model: Rectified_Flow
+distortion: SR
+gpu_ids: [0]
+timesteps_ode: [1]
+
+sde:
+  T: 1000
+  schedule: linear # linear, cosine
+
+method:
+  isXT: True  # True
+  base: False
+  weighta: 0.3
+
+#### datasets
+datasets:
+  train:
+    name: Train_Dataset
+    mode: LQGT
+    dataroot_GT: /Datasets/SR/DIV2K_train_HR
+    dataroot_LQ: /Datasets/SR/DIV2K_train_LR_unknown/X4
+    use_shuffle: true
+    n_workers: 1  # per GPU
+    batch_size: 8
+    GT_size: 256 #256
+    LR_size: 256 #256
+    use_flip: true
+    use_rot: true
+    color: RGB
+  val:
+    name: Val_Dataset
+    mode: LQGT
+    dataroot_GT: /Datasets/SR/DIV2K_val_HR
+    dataroot_LQ: /Datasets/SR/DIV2K_val_LR_unknown/X4
+    batch_size: 1
+    # GT_size: 256
+    # LR_size: 256
+    use_flip: false
+    use_rot: false
+    color: RGB
+
+
+# ##### network structures
+network_G:
+ which_model_G: ConditionalUNet # UNet
+ setting:
+   in_nc: 3
+   out_nc: 3
+   nf: 64
+   depth: 4
+
+
+#### path
+path:
+  pretrain_model_G: ~
+  strict_load: true
+  resume_state: ~
+  experiments_root: /results
+
+
+#### training settings: learning rate scheme, loss
+train:
+  optimizer: Adam # Adam, AdamW, Lion
+  lr_G: !!float 2e-4
+  lr_scheme: MultiStepLR # TrueCosineAnnealingLR # MultiStepLR
+  beta1: 0.9
+  beta2: 0.99
+  niter: 700000
+  warmup_iter: -1  # no warm up
+  lr_steps: [100000, 200000, 400000, 600000]
+  lr_gamma: 0.5
+  eta_min: !!float 1e-7
+
+  # criterion
+  is_weighted: False
+  loss_type: l2
+  weight: 1.0
+
+  manual_seed: 0
+  val_freq: !!float 1e4
+
+
+#### logger
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 1e4
